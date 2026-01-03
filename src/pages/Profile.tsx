@@ -29,8 +29,8 @@ export default function Profile() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    phone: user?.phone || "+1 (555) 123-4567",
-    address: user?.address || "123 Corporate Drive, Suite 100",
+    phone: user?.phone || "+91 8653442320",
+    address: user?.address || "Rohini,Delhi",
   });
   const [skills] = useState<Skill[]>(initialSkills);
   const [about, setAbout] = useState(
@@ -57,8 +57,8 @@ export default function Profile() {
 
   const handleCancel = () => {
     setFormData({
-      phone: user?.phone || "+1 (555) 123-4567",
-      address: user?.address || "123 Corporate Drive, Suite 100",
+      phone: user?.phone || "+91 8653442320",
+      address: user?.address || "Bengaluru,Karnataka,",
     });
     setIsEditing(false);
   };
@@ -74,7 +74,7 @@ export default function Profile() {
               <div className="flex gap-4">
                 <Avatar className="h-20 w-20 border-2 border-[hsl(var(--card-accent))]">
                   <AvatarFallback className="bg-[hsl(var(--card-accent))] text-foreground text-xl font-semibold">
-                    {user?.name ? getInitials(user.name) : "U"}
+                    {user?.name ? getInitials(user.name) : "X"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-1">
