@@ -29,18 +29,33 @@ interface EmployeeSalary {
   professionalTax: number;
 }
 
-const companySalaryStructure = {
+interface CompanyStructure {
+  monthWage: number;
+  yearlyWage: number;
+  workingDays: number;
+  breakTime: number;
+  components: SalaryComponent[];
+  pfContribution: {
+    employee: { amount: number; percentage: string };
+    employer: { amount: number; percentage: string };
+  };
+  taxDeductions: {
+    professionalTax: number;
+  };
+}
+
+const initialCompanyStructure: CompanyStructure = {
   monthWage: 50000,
   yearlyWage: 600000,
   workingDays: 5,
   breakTime: 1,
   components: [
-    { name: "Basic Salary", amount: 25000, description: "Define basic salary from company cost, compute it based on monthly wages", percentage: "" },
-    { name: "House Rent Allowance", amount: 12500, description: "HRA provided to employees 50% of the basic salary", percentage: "" },
-    { name: "Standard Allowance", amount: 4167, description: "A standard allowance is a predetermined, fixed amount provided to employee as part of their salary", percentage: "16.67%" },
-    { name: "Performance Bonus", amount: 2082.50, description: "Variable amount paid during payroll. The value defined by the company and calculated as a % of the basic salary", percentage: "8.33%" },
-    { name: "Leave Travel Allowance", amount: 2082.50, description: "LTA is paid by the company to employees to cover their travel expenses, and calculated as a % of the basic salary", percentage: "8.33%" },
-    { name: "Fixed Allowance", amount: 2918, description: "Fixed allowance portion of wages is determined after calculating all salary components", percentage: "11.67%" },
+    { name: "Basic Salary", amount: 25000, description: "Base salary component", percentage: "" },
+    { name: "House Rent Allowance", amount: 12500, description: "50% of basic salary", percentage: "" },
+    { name: "Standard Allowance", amount: 4167, description: "Fixed monthly allowance", percentage: "16.67%" },
+    { name: "Performance Bonus", amount: 2083, description: "Performance-based incentive", percentage: "8.33%" },
+    { name: "Leave Travel Allowance", amount: 2083, description: "Travel expense allowance", percentage: "8.33%" },
+    { name: "Fixed Allowance", amount: 2918, description: "Additional fixed component", percentage: "11.67%" },
   ],
   pfContribution: {
     employee: { amount: 3000, percentage: "12.00%" },
@@ -88,6 +103,11 @@ export default function SalaryInfo() {
   const [employeeSalaries, setEmployeeSalaries] = useState<Record<string, EmployeeSalary>>(initialEmployeeSalaries);
   const [editedSalary, setEditedSalary] = useState<EmployeeSalary | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Company structure state
+  const [companyStructure, setCompanyStructure] = useState<CompanyStructure>(initialCompanyStructure);
+  const [editedCompanyStructure, setEditedCompanyStructure] = useState<CompanyStructure | null>(null);
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
 
   if (!isAdmin) {
     return (
@@ -117,100 +137,50 @@ export default function SalaryInfo() {
           </TabsList>
 
           {/* Company Structure Tab */}
-          <TabsContent value="company" className="mt-4 space-y-6">
-            <Card className="border-border shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between pb-4">
-                <div>
-                  <CardTitle className="text-base font-display">Company Salary Structure</CardTitle>
-                </div>
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                  <Pencil className="h-3 w-3" />
-                  Edit Structure
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Wage Summary */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground text-xs">Month Wage</p>
-                    <p className="font-semibold">{companySalaryStructure.monthWage.toLocaleString()} <span className="text-muted-foreground font-normal">/ Month</span></p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs">Yearly wage</p>
-                    <p className="font-semibold">{companySalaryStructure.yearlyWage.toLocaleString()} <span className="text-muted-foreground font-normal">/ Yearly</span></p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs">No of working days in a week:</p>
-                    <p className="font-semibold">{companySalaryStructure.workingDays}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-xs">Break Time:</p>
-                    <p className="font-semibold">{companySalaryStructure.breakTime} <span className="text-muted-foreground font-normal">/hrs</span></p>
-                  </div>
-                </div>
-
-                {/* Salary Components and PF */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Salary Components */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-foreground">Salary Components</h4>
-                    <div className="space-y-3">
-                      {companySalaryStructure.components.map((component, index) => (
-                        <div key={index} className="space-y-0.5">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">{component.name}</span>
-                            <div className="text-right">
-                              <span className="text-sm font-semibold">{component.amount.toLocaleString()}</span>
-                              <span className="text-xs text-muted-foreground"> ₹/month</span>
-                              {component.percentage && (
-                                <span className="text-xs text-muted-foreground ml-1">{component.percentage}</span>
-                              )}
-                            </div>
-                          </div>
-                          <p className="text-[11px] text-muted-foreground leading-tight">{component.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* PF and Tax */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-foreground">Provident Fund (PF) Contribution</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Employee Contribution</span>
-                        <div className="text-right">
-                          <span className="text-sm font-semibold">{companySalaryStructure.pfContribution.employee.amount.toLocaleString()}</span>
-                          <span className="text-xs text-muted-foreground"> ₹/month {companySalaryStructure.pfContribution.employee.percentage}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Employer Contribution</span>
-                        <div className="text-right">
-                          <span className="text-sm font-semibold">{companySalaryStructure.pfContribution.employer.amount.toLocaleString()}</span>
-                          <span className="text-xs text-muted-foreground"> ₹/month {companySalaryStructure.pfContribution.employer.percentage}</span>
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">PF is calculated based on the basic salary</p>
-                    </div>
-
-                    <h4 className="text-sm font-semibold text-foreground pt-4">Tax Deductions</h4>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-sm">Professional Tax</span>
-                          <p className="text-[11px] text-muted-foreground">Professional Tax deducted from the Gross salary</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-sm font-semibold">{companySalaryStructure.taxDeductions.professionalTax}</span>
-                          <span className="text-xs text-muted-foreground"> ₹/month</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="company" className="mt-4">
+            <CompanyStructureEditor
+              structure={editedCompanyStructure || companyStructure}
+              isEditing={isEditingCompany}
+              onEdit={() => {
+                setEditedCompanyStructure(companyStructure);
+                setIsEditingCompany(true);
+              }}
+              onCancel={() => {
+                setEditedCompanyStructure(null);
+                setIsEditingCompany(false);
+              }}
+              onSave={() => {
+                if (editedCompanyStructure) {
+                  setCompanyStructure(editedCompanyStructure);
+                  setIsEditingCompany(false);
+                  setEditedCompanyStructure(null);
+                  toast.success("Company structure updated successfully");
+                }
+              }}
+              onChange={(updates) => {
+                setEditedCompanyStructure(prev => prev ? { ...prev, ...updates } : null);
+              }}
+              onComponentChange={(index, field, value) => {
+                setEditedCompanyStructure(prev => {
+                  if (!prev) return null;
+                  const newComponents = [...prev.components];
+                  newComponents[index] = { ...newComponents[index], [field]: value };
+                  return { ...prev, components: newComponents };
+                });
+              }}
+              onPfChange={(type, field, value) => {
+                setEditedCompanyStructure(prev => {
+                  if (!prev) return null;
+                  return {
+                    ...prev,
+                    pfContribution: {
+                      ...prev.pfContribution,
+                      [type]: { ...prev.pfContribution[type], [field]: value }
+                    }
+                  };
+                });
+              }}
+            />
           </TabsContent>
 
           {/* Employee Salary Tab */}
@@ -431,6 +401,280 @@ function EmployeeSalaryEditor({
               <p className="text-[10px] text-muted-foreground">{field.description}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Company Structure Editor Component
+interface CompanyStructureEditorProps {
+  structure: CompanyStructure;
+  isEditing: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: () => void;
+  onChange: (updates: Partial<CompanyStructure>) => void;
+  onComponentChange: (index: number, field: keyof SalaryComponent, value: string | number) => void;
+  onPfChange: (type: 'employee' | 'employer', field: 'amount' | 'percentage', value: number | string) => void;
+}
+
+function CompanyStructureEditor({
+  structure,
+  isEditing,
+  onEdit,
+  onCancel,
+  onSave,
+  onChange,
+  onComponentChange,
+  onPfChange
+}: CompanyStructureEditorProps) {
+  const totalEarnings = structure.components.reduce((sum, c) => sum + c.amount, 0);
+  const totalDeductions = structure.pfContribution.employee.amount + structure.taxDeductions.professionalTax;
+
+  return (
+    <div className="space-y-6">
+      {/* Header Card */}
+      <Card className="border-border shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between py-4">
+          <div>
+            <CardTitle className="text-base font-display">Company Salary Structure</CardTitle>
+            <CardDescription className="text-xs">Configure the default salary structure for all employees</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={onCancel}>
+                  <RotateCcw className="h-3 w-3" />
+                  Cancel
+                </Button>
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={onSave}>
+                  <Save className="h-3 w-3" />
+                  Save Structure
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={onEdit}>
+                <Pencil className="h-3 w-3" />
+                Edit Structure
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground mb-1">Monthly Wage</p>
+            {isEditing ? (
+              <div className="relative">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                <Input
+                  type="number"
+                  value={structure.monthWage}
+                  onChange={(e) => onChange({ monthWage: parseFloat(e.target.value) || 0 })}
+                  className="pl-6 h-8 text-sm font-semibold"
+                />
+              </div>
+            ) : (
+              <p className="text-lg font-bold">₹{structure.monthWage.toLocaleString()}</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground mb-1">Yearly Wage</p>
+            {isEditing ? (
+              <div className="relative">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                <Input
+                  type="number"
+                  value={structure.yearlyWage}
+                  onChange={(e) => onChange({ yearlyWage: parseFloat(e.target.value) || 0 })}
+                  className="pl-6 h-8 text-sm font-semibold"
+                />
+              </div>
+            ) : (
+              <p className="text-lg font-bold">₹{structure.yearlyWage.toLocaleString()}</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground mb-1">Working Days/Week</p>
+            {isEditing ? (
+              <Input
+                type="number"
+                value={structure.workingDays}
+                onChange={(e) => onChange({ workingDays: parseInt(e.target.value) || 0 })}
+                className="h-8 text-sm font-semibold"
+              />
+            ) : (
+              <p className="text-lg font-bold">{structure.workingDays} days</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground mb-1">Break Time</p>
+            {isEditing ? (
+              <Input
+                type="number"
+                value={structure.breakTime}
+                onChange={(e) => onChange({ breakTime: parseFloat(e.target.value) || 0 })}
+                className="h-8 text-sm font-semibold"
+              />
+            ) : (
+              <p className="text-lg font-bold">{structure.breakTime} hr</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Salary Components */}
+        <Card className="border-border shadow-sm lg:col-span-2">
+          <CardHeader className="py-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">Salary Components</CardTitle>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Total Earnings</p>
+                <p className="text-sm font-bold text-primary">₹{totalEarnings.toLocaleString()}/month</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-3">
+              {structure.components.map((component, index) => (
+                <div key={index} className="flex items-center gap-4 p-3 rounded-lg bg-secondary/20 border border-border/50">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{component.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{component.description}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {isEditing ? (
+                      <>
+                        <div className="relative w-28">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₹</span>
+                          <Input
+                            type="number"
+                            value={component.amount}
+                            onChange={(e) => onComponentChange(index, 'amount', parseFloat(e.target.value) || 0)}
+                            className="pl-5 h-8 text-xs"
+                          />
+                        </div>
+                        {component.percentage && (
+                          <Input
+                            type="text"
+                            value={component.percentage}
+                            onChange={(e) => onComponentChange(index, 'percentage', e.target.value)}
+                            className="w-16 h-8 text-xs text-center"
+                            placeholder="%"
+                          />
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">₹{component.amount.toLocaleString()}</p>
+                        {component.percentage && (
+                          <p className="text-[10px] text-muted-foreground">{component.percentage}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Deductions Column */}
+        <div className="space-y-6">
+          {/* PF Contribution */}
+          <Card className="border-border shadow-sm">
+            <CardHeader className="py-4">
+              <CardTitle className="text-sm font-semibold">PF Contribution</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-3">
+              <div className="p-3 rounded-lg bg-secondary/20 border border-border/50">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium">Employee</p>
+                  {isEditing ? (
+                    <div className="relative w-24">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₹</span>
+                      <Input
+                        type="number"
+                        value={structure.pfContribution.employee.amount}
+                        onChange={(e) => onPfChange('employee', 'amount', parseFloat(e.target.value) || 0)}
+                        className="pl-5 h-7 text-xs"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm font-semibold">₹{structure.pfContribution.employee.amount.toLocaleString()}</p>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground">{structure.pfContribution.employee.percentage} of basic</p>
+              </div>
+              <div className="p-3 rounded-lg bg-secondary/20 border border-border/50">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium">Employer</p>
+                  {isEditing ? (
+                    <div className="relative w-24">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₹</span>
+                      <Input
+                        type="number"
+                        value={structure.pfContribution.employer.amount}
+                        onChange={(e) => onPfChange('employer', 'amount', parseFloat(e.target.value) || 0)}
+                        className="pl-5 h-7 text-xs"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm font-semibold">₹{structure.pfContribution.employer.amount.toLocaleString()}</p>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground">{structure.pfContribution.employer.percentage} of basic</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tax Deductions */}
+          <Card className="border-border shadow-sm">
+            <CardHeader className="py-4">
+              <CardTitle className="text-sm font-semibold">Tax Deductions</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="p-3 rounded-lg bg-secondary/20 border border-border/50">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-medium">Professional Tax</p>
+                  {isEditing ? (
+                    <div className="relative w-24">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">₹</span>
+                      <Input
+                        type="number"
+                        value={structure.taxDeductions.professionalTax}
+                        onChange={(e) => onChange({ taxDeductions: { professionalTax: parseFloat(e.target.value) || 0 } })}
+                        className="pl-5 h-7 text-xs"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm font-semibold">₹{structure.taxDeductions.professionalTax}</p>
+                  )}
+                </div>
+                <p className="text-[10px] text-muted-foreground">Monthly deduction</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Summary */}
+          <Card className="border-primary/20 bg-primary/5 shadow-sm">
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-1">Total Deductions</p>
+              <p className="text-lg font-bold text-destructive">-₹{totalDeductions.toLocaleString()}/month</p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
