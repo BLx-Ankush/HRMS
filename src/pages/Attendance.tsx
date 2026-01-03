@@ -4,59 +4,39 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, CheckCircle2, XCircle, LogIn, LogOut, Calendar } from "lucide-react";
-
-interface AttendanceRecord {
-  date: string;
-  checkIn: string | null;
-  checkOut: string | null;
-  status: "present" | "absent" | "late" | "half_day";
-  hoursWorked: number;
-}
+import { Clock, LogIn, LogOut, ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 interface EmployeeAttendance {
   id: string;
   name: string;
-  department: string;
   checkIn: string | null;
   checkOut: string | null;
-  status: "present" | "absent" | "late" | "not_checked_in";
+  workHours: string | null;
+  extraHours: string | null;
 }
 
-const myAttendanceRecords: AttendanceRecord[] = [
-  { date: "2026-01-03", checkIn: "09:02", checkOut: null, status: "present", hoursWorked: 0 },
-  { date: "2026-01-02", checkIn: "08:58", checkOut: "18:05", status: "present", hoursWorked: 9.1 },
-  { date: "2026-01-01", checkIn: null, checkOut: null, status: "absent", hoursWorked: 0 },
-  { date: "2025-12-31", checkIn: "09:30", checkOut: "18:00", status: "late", hoursWorked: 8.5 },
-  { date: "2025-12-30", checkIn: "08:55", checkOut: "17:55", status: "present", hoursWorked: 9 },
+const mockAttendance: EmployeeAttendance[] = [
+  { id: "EMP001", name: "Sarah Johnson", checkIn: null, checkOut: null, workHours: null, extraHours: null },
+  { id: "EMP002", name: "John Smith", checkIn: null, checkOut: null, workHours: null, extraHours: null },
+  { id: "EMP003", name: "Mike Brown", checkIn: null, checkOut: null, workHours: null, extraHours: null },
+  { id: "EMP004", name: "Emily Davis", checkIn: null, checkOut: null, workHours: null, extraHours: null },
+  { id: "EMP005", name: "Alex Wilson", checkIn: null, checkOut: null, workHours: null, extraHours: null },
+  { id: "EMP006", name: "Lisa Chen", checkIn: null, checkOut: null, workHours: null, extraHours: null },
 ];
-
-const allEmployeesAttendance: EmployeeAttendance[] = [
-  { id: "EMP001", name: "Sarah Johnson", department: "HR", checkIn: "08:45", checkOut: null, status: "present" },
-  { id: "EMP002", name: "John Smith", department: "Engineering", checkIn: "09:02", checkOut: null, status: "present" },
-  { id: "EMP003", name: "Mike Brown", department: "Engineering", checkIn: "09:15", checkOut: null, status: "late" },
-  { id: "EMP004", name: "Emily Davis", department: "Design", checkIn: null, checkOut: null, status: "absent" },
-  { id: "EMP005", name: "Alex Wilson", department: "Marketing", checkIn: "08:50", checkOut: null, status: "present" },
-  { id: "EMP006", name: "Lisa Chen", department: "Finance", checkIn: null, checkOut: null, status: "not_checked_in" },
-];
-
-const statusConfig: Record<string, { label: string; className: string }> = {
-  present: { label: "Present", className: "bg-success/10 text-success border-success/20" },
-  absent: { label: "Absent", className: "bg-destructive/10 text-destructive border-destructive/20" },
-  late: { label: "Late", className: "bg-warning/10 text-warning border-warning/20" },
-  half_day: { label: "Half Day", className: "bg-secondary text-secondary-foreground border-secondary" },
-  not_checked_in: { label: "Not Checked In", className: "bg-muted text-muted-foreground border-muted" },
-};
 
 export default function Attendance() {
   const { user } = useAuth();
   const { toast } = useToast();
   const isAdmin = user?.role === "admin";
-  const [isCheckedIn, setIsCheckedIn] = useState(true);
-  const [checkInTime, setCheckInTime] = useState("09:02");
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [checkInTime, setCheckInTime] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewType, setViewType] = useState("day");
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const handleCheckIn = () => {
     const now = new Date();
@@ -79,16 +59,39 @@ export default function Attendance() {
     });
   };
 
-  const presentToday = allEmployeesAttendance.filter((e) => e.status === "present" || e.status === "late").length;
-  const absentToday = allEmployeesAttendance.filter((e) => e.status === "absent").length;
+  const filteredAttendance = mockAttendance.filter(
+    (emp) =>
+      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  return (
-    <DashboardLayout title="Attendance">
-      <div className="space-y-6">
-        {/* Stats / Check-in Card */}
-        {!isAdmin ? (
-          <Card className="border-border shadow-soft overflow-hidden">
-            <div className="gradient-primary p-6">
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", { 
+      day: "numeric", 
+      month: "long", 
+      year: "numeric" 
+    });
+  };
+
+  const goToPreviousDay = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setCurrentDate(newDate);
+  };
+
+  const goToNextDay = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setCurrentDate(newDate);
+  };
+
+  // Employee view
+  if (!isAdmin) {
+    return (
+      <DashboardLayout title="Attendance">
+        <div className="space-y-6">
+          <Card className="border-border shadow-sm overflow-hidden">
+            <div className="bg-primary p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-display font-semibold text-primary-foreground">Today's Attendance</h3>
@@ -98,12 +101,12 @@ export default function Attendance() {
                 </div>
                 <div className="flex gap-3">
                   {!isCheckedIn ? (
-                    <Button onClick={handleCheckIn} variant="secondary" className="shadow-soft">
+                    <Button onClick={handleCheckIn} variant="secondary">
                       <LogIn className="mr-2 h-4 w-4" />
                       Check In
                     </Button>
                   ) : (
-                    <Button onClick={handleCheckOut} variant="secondary" className="shadow-soft">
+                    <Button onClick={handleCheckOut} variant="secondary">
                       <LogOut className="mr-2 h-4 w-4" />
                       Check Out
                     </Button>
@@ -115,205 +118,119 @@ export default function Attendance() {
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="text-center p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Check In</p>
-                  <p className="text-2xl font-display font-bold text-foreground">{isCheckedIn ? checkInTime : "--:--"}</p>
+                  <p className="text-2xl font-display font-bold text-foreground">{checkInTime || "--:--"}</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Check Out</p>
-                  <p className="text-2xl font-display font-bold text-foreground">{!isCheckedIn ? "18:05" : "--:--"}</p>
+                  <p className="text-2xl font-display font-bold text-foreground">--:--</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge variant="outline" className={isCheckedIn ? statusConfig.present.className : statusConfig.absent.className}>
-                    {isCheckedIn ? "Present" : "Checked Out"}
+                  <Badge variant="outline" className={isCheckedIn ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}>
+                    {isCheckedIn ? "Present" : "Not Checked In"}
                   </Badge>
                 </div>
               </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card className="border-border shadow-soft">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Present Today</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display font-bold text-success">{presentToday}</p>
-              </CardContent>
-            </Card>
-            <Card className="border-border shadow-soft">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Absent</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display font-bold text-destructive">{absentToday}</p>
-              </CardContent>
-            </Card>
-            <Card className="border-border shadow-soft">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Late Arrivals</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display font-bold text-warning">
-                  {allEmployeesAttendance.filter((e) => e.status === "late").length}
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-border shadow-soft">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Attendance Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-display font-bold text-foreground">
-                  {Math.round((presentToday / allEmployeesAttendance.length) * 100)}%
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-        {/* Attendance Records */}
-        <Card className="border-border shadow-soft">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-display">
-              <Clock className="h-5 w-5" />
-              {isAdmin ? "Today's Attendance" : "My Attendance History"}
-            </CardTitle>
-            <CardDescription>
-              {isAdmin ? "View and manage employee attendance" : "Your attendance records for the current month"}
-            </CardDescription>
+  // Admin view
+  return (
+    <DashboardLayout title="Attendance">
+      <div className="space-y-6">
+        <Card className="border-border shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-display">Attendance</CardTitle>
           </CardHeader>
-          <CardContent>
-            {isAdmin ? (
-              <Tabs defaultValue="today">
-                <TabsList>
-                  <TabsTrigger value="today">Today</TabsTrigger>
-                  <TabsTrigger value="weekly">This Week</TabsTrigger>
-                </TabsList>
-                <TabsContent value="today" className="mt-4">
-                  <div className="rounded-lg border border-border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-secondary/50">
-                          <TableHead>Employee</TableHead>
-                          <TableHead>Department</TableHead>
-                          <TableHead>Check In</TableHead>
-                          <TableHead>Check Out</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {allEmployeesAttendance.map((record) => (
-                          <TableRow key={record.id}>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium">{record.name}</p>
-                                <p className="text-sm text-muted-foreground">{record.id}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell>{record.department}</TableCell>
-                            <TableCell>
-                              {record.checkIn ? (
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="h-4 w-4 text-success" />
-                                  {record.checkIn}
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <XCircle className="h-4 w-4" />
-                                  --:--
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {record.checkOut ? (
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="h-4 w-4 text-success" />
-                                  {record.checkOut}
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <XCircle className="h-4 w-4" />
-                                  --:--
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className={statusConfig[record.status].className}>
-                                {statusConfig[record.status].label}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </TabsContent>
-                <TabsContent value="weekly" className="mt-4">
-                  <div className="text-center py-8 text-muted-foreground">
-                    Weekly attendance summary will be available here
-                  </div>
-                </TabsContent>
-              </Tabs>
-            ) : (
-              <div className="rounded-lg border border-border overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-secondary/50">
-                      <TableHead>Date</TableHead>
-                      <TableHead>Check In</TableHead>
-                      <TableHead>Check Out</TableHead>
-                      <TableHead>Hours Worked</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {myAttendanceRecords.map((record) => (
-                      <TableRow key={record.date}>
-                        <TableCell className="font-medium">
-                          {new Date(record.date).toLocaleDateString("en-US", {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </TableCell>
-                        <TableCell>
-                          {record.checkIn ? (
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-success" />
-                              {record.checkIn}
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <XCircle className="h-4 w-4" />
-                              --:--
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {record.checkOut ? (
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-success" />
-                              {record.checkOut}
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <XCircle className="h-4 w-4" />
-                              --:--
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>{record.hoursWorked > 0 ? `${record.hoursWorked}h` : "-"}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={statusConfig[record.status].className}>
-                            {statusConfig[record.status].label}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+          <CardContent className="space-y-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search employees..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
+            </div>
+
+            {/* Date Navigation */}
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={goToPreviousDay}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={goToNextDay}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Select value="today">
+                <SelectTrigger className="w-[140px] h-8 text-sm">
+                  <SelectValue placeholder="Date" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="yesterday">Yesterday</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex rounded-lg border border-border overflow-hidden">
+                <Button
+                  variant={viewType === "day" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="rounded-none h-8 px-3 text-xs"
+                  onClick={() => setViewType("day")}
+                >
+                  Day
+                </Button>
+                <Button
+                  variant={viewType === "week" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="rounded-none h-8 px-3 text-xs border-l"
+                  onClick={() => setViewType("week")}
+                >
+                  Week
+                </Button>
               </div>
-            )}
+            </div>
+
+            {/* Current Date Display */}
+            <p className="text-sm font-medium text-foreground">{formatDate(currentDate)}</p>
+
+            {/* Table */}
+            <div className="rounded-lg border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-secondary/30">
+                    <TableHead className="text-xs font-medium">Emp</TableHead>
+                    <TableHead className="text-xs font-medium">Check In</TableHead>
+                    <TableHead className="text-xs font-medium">Check Out</TableHead>
+                    <TableHead className="text-xs font-medium">Work Hours</TableHead>
+                    <TableHead className="text-xs font-medium">Extra Hours</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAttendance.map((record) => (
+                    <TableRow key={record.id}>
+                      <TableCell className="text-sm font-medium">{record.name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {record.checkIn || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {record.checkOut || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {record.workHours || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {record.extraHours || "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

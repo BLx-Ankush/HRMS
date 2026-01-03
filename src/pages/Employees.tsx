@@ -79,7 +79,7 @@ const mockEmployees: Employee[] = [
     phone: "+1 (555) 789-0123",
     department: "Finance",
     position: "Financial Analyst",
-    status: "inactive",
+    status: "active",
     joinDate: "2022-04-15",
   },
 ];
@@ -87,7 +87,7 @@ const mockEmployees: Employee[] = [
 const statusConfig: Record<string, { label: string; className: string }> = {
   active: { label: "Active", className: "bg-success/10 text-success border-success/20" },
   inactive: { label: "Inactive", className: "bg-muted text-muted-foreground border-muted" },
-  on_leave: { label: "On Leave", className: "bg-warning/10 text-warning border-warning/20" },
+  on_leave: { label: "Leave", className: "bg-warning/10 text-warning border-warning/20" },
 };
 
 export default function Employees() {
@@ -113,41 +113,40 @@ export default function Employees() {
 
   const departments = [...new Set(mockEmployees.map((e) => e.department))];
   const activeCount = mockEmployees.filter((e) => e.status === "active").length;
+  const onLeaveCount = mockEmployees.filter((e) => e.status === "on_leave").length;
 
   return (
     <DashboardLayout title="Employees">
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card className="border-border shadow-soft">
+          <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Employees</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total Employees</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-display font-bold text-foreground">{mockEmployees.length}</p>
             </CardContent>
           </Card>
-          <Card className="border-border shadow-soft">
+          <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground">Active</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-display font-bold text-success">{activeCount}</p>
             </CardContent>
           </Card>
-          <Card className="border-border shadow-soft">
+          <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">On Leave</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground">On Leave</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-display font-bold text-warning">
-                {mockEmployees.filter((e) => e.status === "on_leave").length}
-              </p>
+              <p className="text-2xl font-display font-bold text-warning">{onLeaveCount}</p>
             </CardContent>
           </Card>
-          <Card className="border-border shadow-soft">
+          <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Departments</CardTitle>
+              <CardTitle className="text-xs font-medium text-muted-foreground">Departments</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-display font-bold text-foreground">{departments.length}</p>
@@ -156,17 +155,19 @@ export default function Employees() {
         </div>
 
         {/* Employee List */}
-        <Card className="border-border shadow-soft">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 font-display">
-                <Users className="h-5 w-5" />
-                Employee Directory
-              </CardTitle>
-              <CardDescription>Manage and view all employee records</CardDescription>
+        <Card className="border-border shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+                <Users className="h-4 w-4 text-foreground" />
+              </div>
+              <div>
+                <CardTitle className="text-base font-display">Employee Directory</CardTitle>
+                <CardDescription className="text-xs">Manage and view all employee records</CardDescription>
+              </div>
             </div>
-            <Button className="gradient-primary border-0">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
               Add Employee
             </Button>
           </CardHeader>
@@ -178,7 +179,7 @@ export default function Employees() {
                 placeholder="Search by name, email, department, or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-9 h-9 text-sm"
               />
             </div>
 
@@ -186,18 +187,17 @@ export default function Employees() {
             <div className="rounded-lg border border-border overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-secondary/50">
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                  <TableRow className="bg-secondary/30">
+                    <TableHead className="text-xs font-medium">Employee</TableHead>
+                    <TableHead className="text-xs font-medium">Department</TableHead>
+                    <TableHead className="text-xs font-medium">Active</TableHead>
+                    <TableHead className="text-xs font-medium w-[60px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredEmployees.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground text-sm">
                         No employees found
                       </TableCell>
                     </TableRow>
@@ -206,21 +206,20 @@ export default function Employees() {
                       <TableRow key={employee.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
                                 {getInitials(employee.name)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium text-foreground">{employee.name}</p>
-                              <p className="text-sm text-muted-foreground">{employee.id}</p>
+                              <p className="text-sm font-medium text-foreground">{employee.name}</p>
+                              <p className="text-[11px] text-muted-foreground">{employee.id}</p>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>{employee.department}</TableCell>
-                        <TableCell>{employee.position}</TableCell>
+                        <TableCell className="text-sm">{employee.department}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={statusConfig[employee.status].className}>
+                          <Badge variant="outline" className={`text-[10px] px-1.5 py-0.5 ${statusConfig[employee.status].className}`}>
                             {statusConfig[employee.status].label}
                           </Badge>
                         </TableCell>
@@ -230,9 +229,10 @@ export default function Employees() {
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                className="h-7 w-7 p-0"
                                 onClick={() => setSelectedEmployee(employee)}
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-3.5 w-3.5" />
                               </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-md">
@@ -243,8 +243,8 @@ export default function Employees() {
                               {selectedEmployee && (
                                 <div className="space-y-6">
                                   <div className="flex items-center gap-4">
-                                    <Avatar className="h-16 w-16">
-                                      <AvatarFallback className="bg-primary text-primary-foreground text-xl">
+                                    <Avatar className="h-14 w-14">
+                                      <AvatarFallback className="bg-primary text-primary-foreground text-lg">
                                         {getInitials(selectedEmployee.name)}
                                       </AvatarFallback>
                                     </Avatar>
