@@ -79,6 +79,40 @@ Dayflow is a comprehensive Human Resource Management System (HRMS) built with mo
 4. **Open your browser**
    Navigate to `http://localhost:8080` to view the application
 
+## 🌐 Live Demo
+
+### Deployment
+The application is deployed and live on **Vercel** for easy access and testing.
+
+**🔗 Live URL:** [https://hrms-one-phi.vercel.app/](https://hrms-one-phi.vercel.app/)
+
+### Demo Accounts
+We've created demo accounts for you to explore all features without setting up your own data:
+
+#### 👨‍💼 Admin Access
+- **Role:** Administrator
+- **Access:** Full system access including employee management, payroll, and admin settings
+- **Features:** Complete HR dashboard, analytics, and administrative controls
+
+#### 👤 Employee Access  
+- **Role:** Employee
+- **Access:** Personal dashboard, attendance tracking, leave requests, and profile management
+- **Features:** Employee self-service portal and personal HR tools
+
+*Demo credentials are available on the sign-in page*
+
+### 🚀 Future Enhancements
+This project is under active development! Upcoming features and improvements include:
+- Advanced analytics and reporting
+- Mobile app development  
+- Integration with third-party HR tools
+- Enhanced security features
+- Multi-language support
+- Advanced workflow automation
+
+*Stay tuned for exciting updates and new features!*
+
+
 ## 🎯 Usage
 
 ### Getting Started
@@ -215,4 +249,4 @@ If you have any questions or need help, please:
 
 ---
 
-**Built with ❤️ by the Dayflow Team**
+**Built with ❤️ by the Team: " THE HONOURED ONES"**
