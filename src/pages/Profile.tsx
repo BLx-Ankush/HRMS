@@ -1,26 +1,19 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, Save, X, Mail, Phone, MapPin, Briefcase, Calendar, Building, Plus } from "lucide-react";
+import { Pencil, Save, X, FileText, Lock, Upload } from "lucide-react";
 
 interface Skill {
   id: string;
   name: string;
-}
-
-interface Certification {
-  id: string;
-  name: string;
-  issuer: string;
-  year: string;
 }
 
 const initialSkills: Skill[] = [
@@ -31,30 +24,19 @@ const initialSkills: Skill[] = [
   { id: "5", name: "HRIS Systems" },
 ];
 
-const initialCertifications: Certification[] = [
-  { id: "1", name: "SHRM-SCP", issuer: "SHRM", year: "2021" },
-  { id: "2", name: "PHR", issuer: "HRCI", year: "2019" },
-];
-
 export default function Profile() {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    phone: user?.phone || "",
-    address: user?.address || "",
+    phone: user?.phone || "+1 (555) 123-4567",
+    address: user?.address || "123 Corporate Drive, Suite 100",
   });
-  const [skills, setSkills] = useState<Skill[]>(initialSkills);
-  const [certifications, setCertifications] = useState<Certification[]>(initialCertifications);
+  const [skills] = useState<Skill[]>(initialSkills);
   const [about, setAbout] = useState(
-    "Experienced HR professional with over 8 years of experience in human resources management, employee relations, and organizational development. Passionate about creating positive workplace cultures and driving employee engagement initiatives."
+    "Experienced HR professional with over 8 years of experience in human resources management, employee relations, and organizational development."
   );
-  const [jobLove, setJobLove] = useState(
-    "I love the opportunity to make a real difference in people's work lives. Whether it's helping someone navigate a career transition, resolving workplace conflicts, or implementing policies that improve work-life balance."
-  );
-  const [interests, setInterests] = useState(
-    "Outside of work, I enjoy hiking, photography, and volunteering at local community centers. I'm also an avid reader and enjoy staying up-to-date with the latest trends in HR technology and organizational development."
-  );
+  const [activeTab, setActiveTab] = useState("resume");
 
   const getInitials = (name: string) => {
     return name
@@ -75,231 +57,167 @@ export default function Profile() {
 
   const handleCancel = () => {
     setFormData({
-      phone: user?.phone || "",
-      address: user?.address || "",
+      phone: user?.phone || "+1 (555) 123-4567",
+      address: user?.address || "123 Corporate Drive, Suite 100",
     });
     setIsEditing(false);
-  };
-
-  const removeSkill = (id: string) => {
-    setSkills(skills.filter(s => s.id !== id));
-  };
-
-  const removeCertification = (id: string) => {
-    setCertifications(certifications.filter(c => c.id !== id));
   };
 
   return (
     <DashboardLayout title="My Profile">
       <div className="space-y-6">
-        {/* Profile Header */}
-        <Card className="border-border shadow-sm overflow-hidden">
-          <div className="h-20 bg-primary" />
-          <CardContent className="relative pt-0">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-10">
-              <Avatar className="h-20 w-20 border-4 border-background shadow-sm">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">
-                  {user?.name ? getInitials(user.name) : "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 pb-2">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-display font-bold text-foreground">{user?.name}</h2>
-                  <Badge variant="outline" className="capitalize bg-primary/10 text-primary border-primary/20 text-[10px]">
-                    {user?.role}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">{user?.position}</p>
-                <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                  <span>{user?.email}</span>
-                  <span>{user?.phone}</span>
+        {/* Profile Header Card */}
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Left Section - Avatar and Basic Info */}
+              <div className="flex gap-4">
+                <Avatar className="h-20 w-20 border-2 border-[hsl(var(--card-accent))]">
+                  <AvatarFallback className="bg-[hsl(var(--card-accent))] text-foreground text-xl font-semibold">
+                    {user?.name ? getInitials(user.name) : "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h2 className="text-lg font-display font-bold text-foreground">{user?.name || "Sarah Johnson"}</h2>
+                  <div className="space-y-0.5 text-xs">
+                    <p className="text-muted-foreground">
+                      <span className="text-muted-foreground/70">Login ID</span>
+                      <br />
+                      <span className="text-foreground font-medium">{user?.employeeId || "EMP001"}</span>
+                    </p>
+                    <p className="text-muted-foreground">
+                      <span className="text-muted-foreground/70">Email</span>
+                      <br />
+                      <span className="text-foreground font-medium">{user?.email || "admin@dayflow.com"}</span>
+                    </p>
+                    <p className="text-muted-foreground">
+                      <span className="text-muted-foreground/70">Mobile</span>
+                      <br />
+                      <span className="text-foreground font-medium">{formData.phone}</span>
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="sm:pb-2">
+
+              {/* Right Section - Company Info */}
+              <div className="flex-1 grid grid-cols-2 gap-x-8 gap-y-2 text-xs">
+                <div>
+                  <p className="text-muted-foreground/70">Company</p>
+                  <p className="text-foreground font-medium">Dayflow Inc.</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground/70">Department</p>
+                  <p className="text-foreground font-medium">{user?.department || "Human Resources"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground/70">Manager</p>
+                  <p className="text-foreground font-medium">CEO</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground/70">Location</p>
+                  <p className="text-foreground font-medium">{formData.address}</p>
+                </div>
+              </div>
+
+              {/* Edit Button */}
+              <div className="absolute top-4 right-4 lg:static lg:self-start">
                 {isEditing ? (
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleCancel} className="h-8 text-xs">
-                      <X className="h-3 w-3 mr-1" />
+                    <Button variant="outline" size="sm" onClick={handleCancel} className="h-8 text-xs gap-1">
+                      <X className="h-3 w-3" />
                       Cancel
                     </Button>
-                    <Button size="sm" onClick={handleSave} className="h-8 text-xs bg-primary hover:bg-primary/90">
-                      <Save className="h-3 w-3 mr-1" />
+                    <Button size="sm" onClick={handleSave} className="h-8 text-xs gap-1">
+                      <Save className="h-3 w-3" />
                       Save
                     </Button>
                   </div>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="h-8 text-xs">
-                    <Pencil className="h-3 w-3 mr-1" />
-                    Edit Profile
+                  <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="h-8 text-xs gap-1 text-muted-foreground">
+                    <Pencil className="h-3 w-3" />
+                    Edit
                   </Button>
                 )}
               </div>
             </div>
+
+            {/* Resume / Private Info Tabs */}
+            <div className="mt-6 pt-4 border-t border-border">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="h-9 bg-transparent p-0 gap-2">
+                  <TabsTrigger 
+                    value="resume" 
+                    className="h-8 px-4 text-xs border border-border data-[state=active]:bg-secondary data-[state=active]:border-foreground/20 rounded-md gap-1.5"
+                  >
+                    <FileText className="h-3 w-3" />
+                    Resume
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="private" 
+                    className="h-8 px-4 text-xs border border-border data-[state=active]:bg-secondary data-[state=active]:border-foreground/20 rounded-md gap-1.5"
+                  >
+                    <Lock className="h-3 w-3" />
+                    Private Info
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="resume" className="mt-4">
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">Upload or view your resume document.</p>
+                    <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                      <Upload className="h-3 w-3" />
+                      Upload Resume
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="private" className="mt-4">
+                  <p className="text-xs text-muted-foreground">Your private information is securely stored and only visible to authorized personnel.</p>
+                </TabsContent>
+              </Tabs>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Main Content Grid */}
+        {/* About and Skills Grid */}
         <div className="grid gap-6 lg:grid-cols-5">
-          {/* Left Column - About Sections */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* About Section */}
-            <Card className="border-border shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display">About</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isEditing ? (
-                  <Textarea
-                    value={about}
-                    onChange={(e) => setAbout(e.target.value)}
-                    className="text-sm min-h-[80px]"
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground leading-relaxed">{about}</p>
-                )}
-              </CardContent>
-            </Card>
+          {/* About Section */}
+          <Card className="border-border shadow-sm lg:col-span-3">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-display">About</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isEditing ? (
+                <Textarea
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  className="text-sm min-h-[80px]"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground leading-relaxed">{about}</p>
+              )}
+            </CardContent>
+          </Card>
 
-            {/* What I love about my job */}
-            <Card className="border-border shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display">What I love about my job</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isEditing ? (
-                  <Textarea
-                    value={jobLove}
-                    onChange={(e) => setJobLove(e.target.value)}
-                    className="text-sm min-h-[60px]"
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground leading-relaxed">{jobLove}</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* My interests and hobbies */}
-            <Card className="border-border shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display">My interests and hobbies</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isEditing ? (
-                  <Textarea
-                    value={interests}
-                    onChange={(e) => setInterests(e.target.value)}
-                    className="text-sm min-h-[60px]"
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground leading-relaxed">{interests}</p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Contact Info Card */}
-            <Card className="border-border shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display">Contact & Employment</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-muted-foreground">{user?.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                    {isEditing ? (
-                      <Input
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="Phone number"
-                        className="h-7 text-sm"
-                      />
-                    ) : (
-                      <span className="text-muted-foreground">{user?.phone || "Not provided"}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Building className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-muted-foreground">{user?.department}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-muted-foreground">{user?.employeeId}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Skills & Certifications */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Skills */}
-            <Card className="border-border shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display">Skills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <Badge
-                      key={skill.id}
-                      variant="secondary"
-                      className="text-xs py-1 px-2 bg-[hsl(var(--card-accent))] hover:bg-[hsl(var(--card-accent))]"
-                    >
-                      {skill.name}
-                      {isEditing && (
-                        <button
-                          onClick={() => removeSkill(skill.id)}
-                          className="ml-1.5 text-muted-foreground hover:text-foreground"
-                        >
-                          <X className="h-2.5 w-2.5" />
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-                {isEditing && (
-                  <Button variant="ghost" size="sm" className="mt-3 h-7 text-xs text-muted-foreground">
-                    <Plus className="h-3 w-3 mr-1" />
-                    Add Skills
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Certifications */}
-            <Card className="border-border shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-display">Certification</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {certifications.map((cert) => (
-                  <div key={cert.id} className="flex items-start justify-between p-2 rounded-lg bg-[hsl(var(--card-accent))]">
-                    <div>
-                      <p className="text-sm font-medium">{cert.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{cert.issuer} • {cert.year}</p>
-                    </div>
-                    {isEditing && (
-                      <button
-                        onClick={() => removeCertification(cert.id)}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </div>
+          {/* Skills Section */}
+          <Card className="border-border shadow-sm lg:col-span-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-display">Skills</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill) => (
+                  <Badge
+                    key={skill.id}
+                    variant="secondary"
+                    className="text-xs py-1 px-2.5 bg-[hsl(var(--card-accent))] hover:bg-[hsl(var(--card-accent))] text-foreground"
+                  >
+                    {skill.name}
+                  </Badge>
                 ))}
-                {isEditing && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground">
-                    <Plus className="h-3 w-3 mr-1" />
-                    Add Certification
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </DashboardLayout>
