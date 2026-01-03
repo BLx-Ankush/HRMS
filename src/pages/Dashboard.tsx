@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
 const adminStats = {
   totalEmployees: 156,
   presentToday: 142,
-  onLeave: 8,
+  attendanceRate: 91,
   pendingLeaveRequests: 12,
   totalPayroll: 485000,
 };
@@ -33,7 +33,7 @@ const recentActivities = [
   { id: 1, type: "leave", user: "John Smith", action: "requested sick leave", time: "2 hours ago" },
   { id: 2, type: "attendance", user: "Sarah Johnson", action: "checked in", time: "3 hours ago" },
   { id: 3, type: "leave", user: "Mike Brown", action: "leave approved", time: "5 hours ago" },
-  { id: 4, type: "employee", user: "Emily Davis", action: "joined the team", time: "1 day ago" },
+  { id: 4, type: "welcome", user: "Welcome back!", action: "You have successfully signed in.", time: "Just now" },
 ];
 
 export default function Dashboard() {
@@ -46,17 +46,17 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-display font-bold text-foreground">
+            <h2 className="text-xl font-display font-bold text-foreground">
               Welcome back, {user?.name?.split(" ")[0]}!
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {isAdmin
                 ? "Here's what's happening with your team today."
                 : "Here's your work summary for today."}
             </p>
           </div>
           {!isAdmin && (
-            <Button asChild className="gradient-primary border-0">
+            <Button asChild className="bg-primary hover:bg-primary/90">
               <Link to="/attendance">
                 <Clock className="mr-2 h-4 w-4" />
                 Check In
@@ -65,51 +65,51 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Admin View */}
         {isAdmin ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-border shadow-soft">
+            <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
+                <CardTitle className="text-xs font-medium text-muted-foreground">Total Employees</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-display font-bold">{adminStats.totalEmployees}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-display font-bold text-foreground">{adminStats.totalEmployees}</div>
+                <p className="text-[11px] text-muted-foreground">
                   <span className="text-success">+3</span> from last month
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-border shadow-soft">
+            <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Present Today</CardTitle>
-                <CheckCircle2 className="h-4 w-4 text-success" />
+                <CardTitle className="text-xs font-medium text-muted-foreground">Present Today</CardTitle>
+                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-display font-bold">{adminStats.presentToday}</div>
-                <p className="text-xs text-muted-foreground">
-                  {Math.round((adminStats.presentToday / adminStats.totalEmployees) * 100)}% attendance rate
+                <div className="text-2xl font-display font-bold text-foreground">{adminStats.presentToday}</div>
+                <p className="text-[11px] text-muted-foreground">
+                  {adminStats.attendanceRate}% attendance rate
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-border shadow-soft">
+            <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+                <CardTitle className="text-xs font-medium text-muted-foreground">Pending Requests</CardTitle>
                 <AlertCircle className="h-4 w-4 text-warning" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-display font-bold">{adminStats.pendingLeaveRequests}</div>
-                <p className="text-xs text-muted-foreground">Leave requests awaiting approval</p>
+                <div className="text-2xl font-display font-bold text-foreground">{adminStats.pendingLeaveRequests}</div>
+                <p className="text-[11px] text-muted-foreground">Leave requests awaiting approval</p>
               </CardContent>
             </Card>
-            <Card className="border-border shadow-soft">
+            <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Monthly Payroll</CardTitle>
+                <CardTitle className="text-xs font-medium text-muted-foreground">Monthly Payroll</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-display font-bold">${adminStats.totalPayroll.toLocaleString()}</div>
-                <p className="text-xs text-muted-foreground">Total for January 2026</p>
+                <div className="text-2xl font-display font-bold text-foreground">${adminStats.totalPayroll.toLocaleString()}</div>
+                <p className="text-[11px] text-muted-foreground">Total for January 2026</p>
               </CardContent>
             </Card>
           </div>
@@ -161,117 +161,137 @@ export default function Dashboard() {
         {/* Quick Actions & Recent Activity */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Quick Actions */}
-          <Card className="border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="font-display">Quick Actions</CardTitle>
-              <CardDescription>Common tasks and shortcuts</CardDescription>
+          <Card className="border-border shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-display">Quick Actions</CardTitle>
+              <CardDescription className="text-xs">Common tasks and shortcuts</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-3">
+            <CardContent className="grid gap-2">
               {isAdmin ? (
                 <>
-                  <Button variant="outline" className="justify-between h-auto py-3" asChild>
-                    <Link to="/employees">
-                      <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-primary" />
-                        <div className="text-left">
-                          <p className="font-medium">Manage Employees</p>
-                          <p className="text-xs text-muted-foreground">View and edit employee records</p>
-                        </div>
+                  <Link
+                    to="/employees"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+                        <Users className="h-4 w-4 text-foreground" />
                       </div>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="justify-between h-auto py-3" asChild>
-                    <Link to="/leave">
-                      <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        <div className="text-left">
-                          <p className="font-medium">Leave Approvals</p>
-                          <p className="text-xs text-muted-foreground">{adminStats.pendingLeaveRequests} pending requests</p>
-                        </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Manage Employees</p>
+                        <p className="text-[11px] text-muted-foreground">View and edit employee records</p>
                       </div>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="justify-between h-auto py-3" asChild>
-                    <Link to="/attendance">
-                      <div className="flex items-center gap-3">
-                        <Clock className="h-5 w-5 text-primary" />
-                        <div className="text-left">
-                          <p className="font-medium">View Attendance</p>
-                          <p className="text-xs text-muted-foreground">Daily attendance records</p>
-                        </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link
+                    to="/leave"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-foreground" />
                       </div>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Leave Approvals</p>
+                        <p className="text-[11px] text-muted-foreground">{adminStats.pendingLeaveRequests} pending requests</p>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link
+                    to="/attendance"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">View Attendance</p>
+                        <p className="text-[11px] text-muted-foreground">Daily attendance records</p>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </>
               ) : (
                 <>
-                  <Button variant="outline" className="justify-between h-auto py-3" asChild>
-                    <Link to="/profile">
-                      <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-primary" />
-                        <div className="text-left">
-                          <p className="font-medium">View Profile</p>
-                          <p className="text-xs text-muted-foreground">View and update your details</p>
-                        </div>
+                  <Link
+                    to="/profile"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+                        <Users className="h-4 w-4 text-foreground" />
                       </div>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="justify-between h-auto py-3" asChild>
-                    <Link to="/leave">
-                      <div className="flex items-center gap-3">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        <div className="text-left">
-                          <p className="font-medium">Request Leave</p>
-                          <p className="text-xs text-muted-foreground">Submit a new leave request</p>
-                        </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">View Profile</p>
+                        <p className="text-[11px] text-muted-foreground">View and update your details</p>
                       </div>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="justify-between h-auto py-3" asChild>
-                    <Link to="/payroll">
-                      <div className="flex items-center gap-3">
-                        <DollarSign className="h-5 w-5 text-primary" />
-                        <div className="text-left">
-                          <p className="font-medium">View Payroll</p>
-                          <p className="text-xs text-muted-foreground">Check your salary details</p>
-                        </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link
+                    to="/leave"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-foreground" />
                       </div>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Request Leave</p>
+                        <p className="text-[11px] text-muted-foreground">Submit a new leave request</p>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link
+                    to="/payroll"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+                        <DollarSign className="h-4 w-4 text-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">View Payroll</p>
+                        <p className="text-[11px] text-muted-foreground">Check your salary details</p>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </>
               )}
             </CardContent>
           </Card>
 
           {/* Recent Activity */}
-          <Card className="border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="font-display">Recent Activity</CardTitle>
-              <CardDescription>Latest updates and actions</CardDescription>
+          <Card className="bg-[hsl(var(--card-accent))] border-none shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-display">Recent Activity</CardTitle>
+              <CardDescription className="text-xs">Latest updates and actions</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {recentActivities.map((activity) => (
                   <div key={activity.id} className="flex items-start gap-3">
-                    <div className={`mt-0.5 h-2 w-2 rounded-full ${
+                    <div className={`mt-1.5 h-1.5 w-1.5 rounded-full ${
                       activity.type === "leave" 
                         ? "bg-warning" 
                         : activity.type === "attendance" 
                           ? "bg-primary" 
-                          : "bg-success"
+                          : activity.type === "welcome"
+                            ? "bg-success"
+                            : "bg-success"
                     }`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-foreground">
                         <span className="font-medium">{activity.user}</span>{" "}
-                        {activity.action}
+                        <span className="text-muted-foreground">{activity.action}</span>
                       </p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      <p className="text-[11px] text-muted-foreground">{activity.time}</p>
                     </div>
                   </div>
                 ))}

@@ -11,7 +11,9 @@ import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import Attendance from "./pages/Attendance";
 import Leave from "./pages/Leave";
+import TimeOff from "./pages/TimeOff";
 import Payroll from "./pages/Payroll";
+import SalaryInfo from "./pages/SalaryInfo";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -32,7 +34,9 @@ const App = () => (
             <Route path="/employees" element={<Employees />} />
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/leave" element={<Leave />} />
+            <Route path="/time-off" element={<TimeOff />} />
             <Route path="/payroll" element={<Payroll />} />
+            <Route path="/salary-info" element={<SalaryInfo />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

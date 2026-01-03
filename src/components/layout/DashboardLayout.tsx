@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { AdminLayout } from "./AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   LayoutDashboard,
-  Users,
   Clock,
   Calendar,
   DollarSign,
@@ -28,14 +28,6 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
   title: string;
 }
-
-const adminNavItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/employees", label: "Employees", icon: Users },
-  { href: "/attendance", label: "Attendance", icon: Clock },
-  { href: "/leave", label: "Leave", icon: Calendar },
-  { href: "/payroll", label: "Payroll", icon: DollarSign },
-];
 
 const employeeNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -52,8 +44,14 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const navItems = user?.role === "admin" ? adminNavItems : employeeNavItems;
+  const isAdmin = user?.role === "admin";
 
+  // If admin, use the AdminLayout with sidebar
+  if (isAdmin) {
+    return <AdminLayout title={title}>{children}</AdminLayout>;
+  }
+
+  // Employee layout with top navigation
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -90,8 +88,8 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/dashboard" className="flex items-center gap-2.5 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground shadow-soft transition-transform group-hover:scale-105">
-                <span className="text-lg font-bold text-background">D</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-soft transition-transform group-hover:scale-105">
+                <span className="text-lg font-bold text-primary-foreground">D</span>
               </div>
               <span className="text-xl font-display font-bold text-foreground hidden sm:block">
                 Dayflow
@@ -100,7 +98,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
-              {navItems.map((item) => {
+              {employeeNavItems.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
                   <Link
@@ -109,7 +107,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                     className={cn(
                       "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-foreground text-background"
+                        ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                     )}
                   >
@@ -130,7 +128,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                     className="relative h-10 w-10 rounded-full hover:bg-secondary"
                   >
                     <Avatar className="h-9 w-9 border-2 border-border">
-                      <AvatarFallback className="bg-foreground text-background font-semibold text-sm">
+                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
                         {user?.name ? getInitials(user.name) : "U"}
                       </AvatarFallback>
                     </Avatar>
@@ -186,7 +184,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
           )}
         >
           <nav className="flex flex-col gap-1 p-4 bg-background/95 backdrop-blur-xl">
-            {navItems.map((item) => {
+            {employeeNavItems.map((item) => {
               const isActive = location.pathname === item.href;
               return (
                 <Link
@@ -196,7 +194,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-foreground text-background"
+                      ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                   )}
                 >
