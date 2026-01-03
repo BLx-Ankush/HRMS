@@ -93,12 +93,14 @@ We've created demo accounts for you to explore all features without setting up y
 - **Role:** Administrator
 - **Access:** Full system access including employee management, payroll, and admin settings
 - **Features:** Complete HR dashboard, analytics, and administrative controls
-
+- **Email|Password:** admin@dayflow.com | admin123
+  
 #### 👤 Employee Access  
 - **Role:** Employee
 - **Access:** Personal dashboard, attendance tracking, leave requests, and profile management
 - **Features:** Employee self-service portal and personal HR tools
-
+- **Email|Password:** employee@dayflow.com | employee123
+  
 *Demo credentials are available on the sign-in page*
 
 ### 🚀 Future Enhancements
