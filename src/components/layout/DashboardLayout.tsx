@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   LayoutDashboard,
   Users,
@@ -21,7 +20,7 @@ import {
   User,
   LogOut,
   Menu,
-  ChevronRight,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +33,7 @@ const adminNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/employees", label: "Employees", icon: Users },
   { href: "/attendance", label: "Attendance", icon: Clock },
-  { href: "/leave", label: "Leave Requests", icon: Calendar },
+  { href: "/leave", label: "Leave", icon: Calendar },
   { href: "/payroll", label: "Payroll", icon: DollarSign },
 ];
 
@@ -51,8 +50,17 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const navItems = user?.role === "admin" ? adminNavItems : employeeNavItems;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -67,130 +75,147 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       .toUpperCase();
   };
 
-  const NavContent = () => (
-    <nav className="flex flex-col gap-1 p-3">
-      {navItems.map((item) => {
-        const isActive = location.pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            to={item.href}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-              isActive
-                ? "bg-primary text-primary-foreground shadow-soft"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            )}
-          >
-            <item.icon className="h-5 w-5" />
-            {item.label}
-            {isActive && <ChevronRight className="h-4 w-4 ml-auto" />}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col border-r border-border bg-card">
-        {/* Logo */}
-        <div className="flex h-16 items-center gap-2 px-6 border-b border-border">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary shadow-soft">
-            <span className="text-lg font-bold text-primary-foreground">D</span>
-          </div>
-          <span className="text-xl font-display font-bold text-foreground">Dayflow</span>
-        </div>
+      {/* Top Navigation Bar */}
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          isScrolled
+            ? "bg-background/70 backdrop-blur-xl border-b border-border/50 shadow-soft"
+            : "bg-background/95 backdrop-blur-sm border-b border-border"
+        )}
+      >
+        <div className="max-w-7xl mx-auto px-4 lg:px-6">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo */}
+            <Link to="/dashboard" className="flex items-center gap-2.5 group">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-foreground shadow-soft transition-transform group-hover:scale-105">
+                <span className="text-lg font-bold text-background">D</span>
+              </div>
+              <span className="text-xl font-display font-bold text-foreground hidden sm:block">
+                Dayflow
+              </span>
+            </Link>
 
-        {/* Navigation */}
-        <div className="flex-1 overflow-y-auto py-4">
-          <NavContent />
-        </div>
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-1">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-foreground text-background"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-        {/* User Section */}
-        <div className="border-t border-border p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {user?.name ? getInitials(user.name) : "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{user?.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
+            {/* Right Section */}
+            <div className="flex items-center gap-3">
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full hover:bg-secondary"
+                  >
+                    <Avatar className="h-9 w-9 border-2 border-border">
+                      <AvatarFallback className="bg-foreground text-background font-semibold text-sm">
+                        {user?.name ? getInitials(user.name) : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Mobile Menu Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
             </div>
           </div>
         </div>
-      </aside>
 
-      {/* Main Content */}
-      <div className="lg:pl-64">
-        {/* Top Header */}
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-card/80 backdrop-blur-sm px-4 lg:px-6">
-          {/* Mobile Menu */}
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <div className="flex h-16 items-center gap-2 px-6 border-b border-border">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
-                  <span className="text-lg font-bold text-primary-foreground">D</span>
-                </div>
-                <span className="text-xl font-display font-bold text-foreground">Dayflow</span>
-              </div>
-              <NavContent />
-            </SheetContent>
-          </Sheet>
+        {/* Mobile Navigation */}
+        <div
+          className={cn(
+            "md:hidden overflow-hidden transition-all duration-300",
+            isMobileMenuOpen ? "max-h-96 border-t border-border" : "max-h-0"
+          )}
+        >
+          <nav className="flex flex-col gap-1 p-4 bg-background/95 backdrop-blur-xl">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </header>
 
-          {/* Page Title */}
-          <h1 className="text-lg font-display font-semibold text-foreground">{title}</h1>
-
-          {/* User Menu */}
-          <div className="ml-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {user?.name ? getInitials(user.name) : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">{user?.name}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="p-4 lg:p-6">
-          <div className="animate-fade-in">{children}</div>
-        </main>
-      </div>
+      {/* Page Content */}
+      <main className="pt-20 px-4 lg:px-6 pb-8 max-w-7xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-display font-bold text-foreground">{title}</h1>
+        </div>
+        <div className="animate-fade-in">{children}</div>
+      </main>
     </div>
   );
 }
